@@ -247,17 +247,17 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 
 - (void)finishRecording;
 {
-    if (assetWriter.status == AVAssetWriterStatusCompleted)
-    {
-        return;
-    }
+  if (assetWriter.status == AVAssetWriterStatusCompleted)
+  {
+    return;
+  }
 
-    isRecording = NO;
-    runOnMainQueueWithoutDeadlocking(^{
-        [assetWriterVideoInput markAsFinished];
-        [assetWriterAudioInput markAsFinished];
-        [assetWriter finishWriting];
-    });
+  isRecording = NO;
+#if defined(__IPHONE_6_0)
+  [assetWriter finishWritingWithCompletionHandler:^(void){}];
+#else
+  [assetWriter finishWriting];
+#endif
 }
 
 - (void)processAudioBuffer:(CMSampleBufferRef)audioBuffer;
