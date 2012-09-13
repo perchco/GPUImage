@@ -163,7 +163,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
 
         [targetTextureIndices removeObjectAtIndex:indexOfObject];
         [targets removeObject:targetToRemove];
-        [targetToRemove endProcessing];
+//        [targetToRemove endProcessing];
     });
 }
 
