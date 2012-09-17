@@ -44,32 +44,53 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
     // Take the difference of the current frame from the low pass filtered result to get the high pass
     frameComparisonFilter = [[GPUImageTwoInputFilter alloc] initWithFragmentShaderFromString:kGPUImageMotionComparisonFragmentShaderString];
     [self addFilter:frameComparisonFilter];
-    
+  
     // Texture location 0 needs to be the original image for the difference blend
     [lowPassFilter addTarget:frameComparisonFilter atTextureLocation:1];
-    
+  
     // End with the average color for the scene to determine the centroid
     averageColor = [[GPUImageAverageColor alloc] init];
-    
+
     __unsafe_unretained GPUImageMotionDetector *weakSelf = self;
 
-    [averageColor setColorAverageProcessingFinishedBlock:^(CGFloat redComponent, CGFloat greenComponent, CGFloat blueComponent, CGFloat alphaComponent, CMTime frameTime) {
-        if (weakSelf.motionDetectionBlock != NULL)
-        {
-            weakSelf.motionDetectionBlock(CGPointMake(redComponent / alphaComponent, greenComponent / alphaComponent), alphaComponent, frameTime);
-        }
+    averageColor.colorAverageProcessingFinishedBlock = ^(CGFloat redComponent, CGFloat greenComponent, CGFloat blueComponent, CGFloat alphaComponent, CMTime frameTime) {
+      if (weakSelf.motionDetectionBlock != NULL)
+      {
+        weakSelf.motionDetectionBlock(CGPointMake(redComponent / alphaComponent, greenComponent / alphaComponent), alphaComponent, frameTime);
+      }
+
+      if (weakSelf.sampleInterval) {
+        [weakSelf disableSampling];
+      }
+//        NSLog(@"COLOR COMPONENTS > RED %f | GREEN %f | BLUE %f | ALPHA %f", redComponent, greenComponent, blueComponent, alphaComponent);
 //        NSLog(@"Average X: %f, Y: %f total: %f", redComponent / alphaComponent, greenComponent / alphaComponent, alphaComponent);
-    }];
-    
+    };
     [frameComparisonFilter addTarget:averageColor];
-    
-    self.initialFilters = [NSArray arrayWithObjects:lowPassFilter, frameComparisonFilter, nil];
-    self.terminalFilter = frameComparisonFilter;
-    
+
     self.lowPassFilterStrength = 0.5;
-    
+
+    [self enableSampling];
+
     return self;
 }
+
+- (void)dealloc;
+{
+  [sampleTimer invalidate];
+}
+
+- (void)disableSampling;
+{
+  self.initialFilters = nil;
+  self.terminalFilter = nil;
+}
+
+- (void)enableSampling;
+{
+  self.initialFilters = [NSArray arrayWithObjects:lowPassFilter, frameComparisonFilter, nil];
+  self.terminalFilter = frameComparisonFilter;
+}
+
 
 #pragma mark -
 #pragma mark Accessors
@@ -82,6 +103,19 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
 - (CGFloat)lowPassFilterStrength;
 {
     return lowPassFilter.filterStrength;
+}
+
+
+- (void)setSampleInterval:(NSTimeInterval)sampleInterval;
+{
+  _sampleInterval = sampleInterval;
+
+  if (_sampleInterval) {
+    sampleTimer = [NSTimer scheduledTimerWithTimeInterval:_sampleInterval target:self selector:@selector(enableSampling) userInfo:nil repeats:YES];
+  }
+  else {
+    [sampleTimer invalidate];
+  }
 }
 
 
