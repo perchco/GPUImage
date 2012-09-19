@@ -110,11 +110,11 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
 {
   _sampleInterval = sampleInterval;
 
-  if (_sampleInterval) {
+  [sampleTimer invalidate];
+
+  if (_sampleInterval > 0.0) {
     sampleTimer = [NSTimer scheduledTimerWithTimeInterval:_sampleInterval target:self selector:@selector(enableSampling) userInfo:nil repeats:YES];
-  }
-  else {
-    [sampleTimer invalidate];
+    NSLog(@"Motion detection sample interval %f", _sampleInterval);
   }
 }
 
