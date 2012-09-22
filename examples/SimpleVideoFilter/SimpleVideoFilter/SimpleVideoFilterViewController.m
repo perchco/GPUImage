@@ -21,8 +21,8 @@
 {
     [super viewDidLoad];
     
-    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
-//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionFront];
+//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
+    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionFront];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionBack];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:AVCaptureDevicePositionBack];
 
@@ -66,8 +66,8 @@
     dispatch_after(startTime, dispatch_get_main_queue(), ^(void){
         NSLog(@"Start recording");
         
-        videoCamera.audioEncodingTarget = movieWriter;
-        [movieWriter startRecording];
+//        videoCamera.audioEncodingTarget = movieWriter;
+//        [movieWriter startRecording];
 
 //        NSError *error = nil;
 //        if (![videoCamera.inputCamera lockForConfiguration:&error])
@@ -81,11 +81,11 @@
         dispatch_time_t stopTime = dispatch_time(DISPATCH_TIME_NOW, delayInSeconds * NSEC_PER_SEC);
         dispatch_after(stopTime, dispatch_get_main_queue(), ^(void){
             
-            [filter removeTarget:movieWriter];
-            videoCamera.audioEncodingTarget = nil;
-            [movieWriter finishRecording];
-            NSLog(@"Movie completed");
-            
+//            [filter removeTarget:movieWriter];
+//            videoCamera.audioEncodingTarget = nil;
+//            [movieWriter finishRecording];
+//            NSLog(@"Movie completed");
+          
 //            [videoCamera.inputCamera lockForConfiguration:nil];
 //            [videoCamera.inputCamera setTorchMode:AVCaptureTorchModeOff];
 //            [videoCamera.inputCamera unlockForConfiguration];
@@ -140,5 +140,27 @@
 {
     [(GPUImageSepiaFilter *)filter setIntensity:[(UISlider *)sender value]];
 }
+
+
+- (IBAction)recordAction:(UIButton *)sender {
+  if (isRecording) {
+    [filter removeTarget:movieWriter];
+    videoCamera.audioEncodingTarget = nil;
+    [movieWriter finishRecording];
+
+    NSURL *movieURL = [NSURL fileURLWithPath:[NSString stringWithFormat:@"Documents/%d.mov", (int)[[NSDate date] timeIntervalSince1970]]];
+    movieWriter = [[GPUImageMovieWriter alloc] initWithMovieURL:movieURL size:CGSizeMake(480.0, 640.0)];
+    [filter addTarget:movieWriter];
+
+    isRecording = NO;
+  }
+  else {
+    videoCamera.audioEncodingTarget = movieWriter;
+    [movieWriter startRecording];
+
+    isRecording = YES;
+  }
+}
+
 
 @end

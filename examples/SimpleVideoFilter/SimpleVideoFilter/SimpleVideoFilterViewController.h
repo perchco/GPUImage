@@ -6,8 +6,12 @@
     GPUImageVideoCamera *videoCamera;
     GPUImageOutput<GPUImageInput> *filter;
     GPUImageMovieWriter *movieWriter;
+  
+  BOOL isRecording;
 }
 
+
+- (IBAction)recordAction:(UIButton *)sender;
 - (IBAction)updateSliderValue:(id)sender;
 
 @end
