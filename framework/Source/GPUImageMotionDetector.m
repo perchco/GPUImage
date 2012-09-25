@@ -36,7 +36,9 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
     {
 		return nil;
     }
-    
+
+    self.enabled = YES;
+
     // Start with a low pass filter to define the component to be removed
     lowPassFilter = [[GPUImageLowPassFilter alloc] init];
     [self addFilter:lowPassFilter];
@@ -83,12 +85,14 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
 {
   self.initialFilters = nil;
   self.terminalFilter = nil;
+  self.enabled = NO;
 }
 
 - (void)enableSampling;
 {
   self.initialFilters = [NSArray arrayWithObjects:lowPassFilter, frameComparisonFilter, nil];
   self.terminalFilter = frameComparisonFilter;
+  self.enabled = YES;
 }
 
 

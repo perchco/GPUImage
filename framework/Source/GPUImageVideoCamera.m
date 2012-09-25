@@ -342,7 +342,19 @@
     {
         return;
     }
-    
+
+  BOOL hasEnabledTargets = NO;
+  for (id<GPUImageInput> currentTarget in targets)
+  {
+    if ([currentTarget enabled]) {
+      hasEnabledTargets = YES;
+      break;
+    }
+  }
+  if (!hasEnabledTargets) {
+    return;
+  }
+
     CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
     CVImageBufferRef cameraFrame = CMSampleBufferGetImageBuffer(sampleBuffer);
     int bufferWidth = CVPixelBufferGetWidth(cameraFrame);
