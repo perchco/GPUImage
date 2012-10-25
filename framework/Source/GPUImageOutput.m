@@ -29,6 +29,20 @@ void runSynchronouslyOnVideoProcessingQueue(void (^block)(void))
 	}
 }
 
+void runAsynchronouslyOnVideoProcessingQueue(void (^block)(void))
+{
+    dispatch_queue_t videoProcessingQueue = [GPUImageOpenGLESContext sharedOpenGLESQueue];
+    
+	if (dispatch_get_current_queue() == videoProcessingQueue)
+	{
+		block();
+	}
+	else
+	{
+		dispatch_async(videoProcessingQueue, block);
+	}
+}
+
 void reportAvailableMemoryForGPUImage(NSString *tag) 
 {    
     if (!tag)
@@ -160,6 +174,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
     runSynchronouslyOnVideoProcessingQueue(^{
         [targetToRemove setInputSize:CGSizeZero atIndex:textureIndexOfTarget];
         [targetToRemove setInputTexture:0 atIndex:textureIndexOfTarget];
+		[targetToRemove setInputRotation:kGPUImageNoRotation atIndex:textureIndexOfTarget];
 
         [targetTextureIndices removeObjectAtIndex:indexOfObject];
         [targets removeObject:targetToRemove];
@@ -177,7 +192,7 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
             NSInteger textureIndexOfTarget = [[targetTextureIndices objectAtIndex:indexOfObject] integerValue];
             
             [targetToRemove setInputSize:CGSizeZero atIndex:textureIndexOfTarget];
-            [targetToRemove setInputTexture:0 atIndex:[[targetTextureIndices objectAtIndex:indexOfObject] integerValue]];
+            [targetToRemove setInputTexture:0 atIndex:textureIndexOfTarget];
             [targetToRemove setInputRotation:kGPUImageNoRotation atIndex:textureIndexOfTarget];
         }
         [targets removeAllObjects];
