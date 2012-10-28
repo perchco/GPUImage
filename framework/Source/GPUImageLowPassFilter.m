@@ -36,6 +36,11 @@
     return self;
 }
 
+- (void)endProcessing;
+{
+  [self removeAllTargets];
+}
+
 #pragma mark -
 #pragma mark Accessors
 

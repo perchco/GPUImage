@@ -70,29 +70,40 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
     [frameComparisonFilter addTarget:averageColor];
 
     self.lowPassFilterStrength = 0.5;
-
-    [self enableSampling];
+    self.initialFilters = [NSArray arrayWithObjects:lowPassFilter, frameComparisonFilter, nil];
+    self.terminalFilter = frameComparisonFilter;
 
     return self;
 }
 
 - (void)dealloc;
 {
-  [sampleTimer invalidate];
 }
 
 - (void)disableSampling;
 {
-  self.initialFilters = nil;
-  self.terminalFilter = nil;
   self.enabled = NO;
 }
 
 - (void)enableSampling;
 {
-  self.initialFilters = [NSArray arrayWithObjects:lowPassFilter, frameComparisonFilter, nil];
-  self.terminalFilter = frameComparisonFilter;
   self.enabled = YES;
+}
+
+
+- (void)endProcessing {
+  [self removeAllTargets];
+
+  [averageColor endProcessing];
+  [frameComparisonFilter endProcessing];
+  [frameComparisonFilter removeAllTargets];
+  [lowPassFilter endProcessing];
+  [lowPassFilter removeAllTargets];
+
+  [sampleTimer invalidate];
+  sampleTimer = nil;
+
+  [super endProcessing];
 }
 
 
@@ -115,6 +126,7 @@ NSString *const kGPUImageMotionComparisonFragmentShaderString = SHADER_STRING
   _sampleInterval = sampleInterval;
 
   [sampleTimer invalidate];
+  sampleTimer = nil;
 
   if (_sampleInterval > 0.0) {
     sampleTimer = [NSTimer scheduledTimerWithTimeInterval:_sampleInterval target:self selector:@selector(enableSampling) userInfo:nil repeats:YES];

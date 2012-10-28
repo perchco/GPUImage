@@ -494,6 +494,7 @@
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
+  @autoreleasepool {
     __unsafe_unretained GPUImageVideoCamera *weakSelf = self;
     if (captureOutput == audioOutput)
     {
@@ -503,11 +504,11 @@
 //        }
 
         CFRetain(sampleBuffer);
-        dispatch_async([GPUImageOpenGLESContext sharedOpenGLESQueue], ^{
+//        dispatch_async([GPUImageOpenGLESContext sharedOpenGLESQueue], ^{
             [weakSelf processAudioSampleBuffer:sampleBuffer];
             CFRelease(sampleBuffer);
 //            dispatch_semaphore_signal(frameRenderingSemaphore);
-        });
+//        });
     }
     else
     {
@@ -517,19 +518,21 @@
         }
 
         CFRetain(sampleBuffer);
+
+        //Feature Detection Hook.
+        if (weakSelf.delegate)
+        {
+          [weakSelf.delegate willOutputSampleBuffer:sampleBuffer];
+        }
+
         dispatch_async([GPUImageOpenGLESContext sharedOpenGLESQueue], ^{
-            //Feature Detection Hook.
-            if (weakSelf.delegate)
-            {
-                [weakSelf.delegate willOutputSampleBuffer:sampleBuffer];
-            }
-            
             [weakSelf processVideoSampleBuffer:sampleBuffer];
-            
+
             CFRelease(sampleBuffer);
             dispatch_semaphore_signal(frameRenderingSemaphore);
         });
     }
+  }
 }
 
 #pragma mark -

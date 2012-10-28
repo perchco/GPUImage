@@ -147,8 +147,10 @@ void reportAvailableMemoryForGPUImage(NSString *tag)
     }
     
     cachedMaximumOutputSize = CGSizeZero;
+
+    __unsafe_unretained GPUImageOutput *weakSelf = self;
     runSynchronouslyOnVideoProcessingQueue(^{
-        [self setInputTextureForTarget:newTarget atIndex:textureLocation];
+        [weakSelf setInputTextureForTarget:newTarget atIndex:textureLocation];
         [targets addObject:newTarget];
         [targetTextureIndices addObject:[NSNumber numberWithInteger:textureLocation]];
     });
