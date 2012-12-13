@@ -49,7 +49,7 @@
     {
 		return nil;
     }
-    
+
 	cameraProcessingQueue = dispatch_queue_create("com.sunsetlakesoftware.GPUImage.cameraProcessingQueue", NULL);
 	audioProcessingQueue = dispatch_queue_create("com.sunsetlakesoftware.GPUImage.audioProcessingQueue", NULL);
     frameRenderingSemaphore = dispatch_semaphore_create(1);
@@ -108,8 +108,8 @@
 	
 	// Add the video frame output	
 	videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-	[videoOutput setAlwaysDiscardsLateVideoFrames:NO];
-    
+	[videoOutput setAlwaysDiscardsLateVideoFrames:[[NSProcessInfo processInfo] processorCount] == 1 ? YES : NO];
+
 	[videoOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA] forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
     
     [videoOutput setSampleBufferDelegate:self queue:cameraProcessingQueue];
@@ -508,10 +508,12 @@
 //            return;
 //        }
 
-        CFRetain(sampleBuffer);
+      CMSampleBufferRef sampleBufferCopy;
+      CMSampleBufferCreateCopy(CFAllocatorGetDefault(), sampleBuffer, &sampleBufferCopy);
+
         runAsynchronouslyOnVideoProcessingQueue(^{
-            [weakSelf processAudioSampleBuffer:sampleBuffer];
-            CFRelease(sampleBuffer);
+            [weakSelf processAudioSampleBuffer:sampleBufferCopy];
+            CFRelease(sampleBufferCopy);
 //            dispatch_semaphore_signal(frameRenderingSemaphore);
         });
     }
@@ -522,21 +524,29 @@
             return;
         }
 
-        CFRetain(sampleBuffer);
+      CMSampleBufferRef sampleBufferCopy;
+      CMSampleBufferCreateCopy(CFAllocatorGetDefault(), sampleBuffer, &sampleBufferCopy);
+
         runAsynchronouslyOnVideoProcessingQueue(^{
             //Feature Detection Hook.
             if (weakSelf.delegate)
             {
-              [weakSelf.delegate willOutputSampleBuffer:sampleBuffer];
+              [weakSelf.delegate willOutputSampleBuffer:sampleBufferCopy];
             }
 
-            [weakSelf processVideoSampleBuffer:sampleBuffer];
+            [weakSelf processVideoSampleBuffer:sampleBufferCopy];
 
-            CFRelease(sampleBuffer);
+            CFRelease(sampleBufferCopy);
             dispatch_semaphore_signal(frameRenderingSemaphore);
         });
     }
   }
+}
+
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didDropSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+  CFDictionaryRef reason = CMGetAttachment(sampleBuffer, kCMSampleBufferAttachmentKey_DroppedFrameReason, NULL);
+  NSLog(@"Camera did drop a sample buffer from connection %@ with reason %@.", connection, reason);
 }
 
 #pragma mark -
