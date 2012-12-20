@@ -508,12 +508,11 @@
 //            return;
 //        }
 
-      CMSampleBufferRef sampleBufferCopy;
-      CMSampleBufferCreateCopy(CFAllocatorGetDefault(), sampleBuffer, &sampleBufferCopy);
+        CFRetain(sampleBuffer);
 
         runAsynchronouslyOnVideoProcessingQueue(^{
-            [weakSelf processAudioSampleBuffer:sampleBufferCopy];
-            CFRelease(sampleBufferCopy);
+            [weakSelf processAudioSampleBuffer:sampleBuffer];
+            CFRelease(sampleBuffer);
 //            dispatch_semaphore_signal(frameRenderingSemaphore);
         });
     }
@@ -524,19 +523,18 @@
             return;
         }
 
-      CMSampleBufferRef sampleBufferCopy;
-      CMSampleBufferCreateCopy(CFAllocatorGetDefault(), sampleBuffer, &sampleBufferCopy);
+        CFRetain(sampleBuffer);
 
         runAsynchronouslyOnVideoProcessingQueue(^{
             //Feature Detection Hook.
             if (weakSelf.delegate)
             {
-              [weakSelf.delegate willOutputSampleBuffer:sampleBufferCopy];
+              [weakSelf.delegate willOutputSampleBuffer:sampleBuffer];
             }
 
-            [weakSelf processVideoSampleBuffer:sampleBufferCopy];
+            [weakSelf processVideoSampleBuffer:sampleBuffer];
 
-            CFRelease(sampleBufferCopy);
+            CFRelease(sampleBuffer);
             dispatch_semaphore_signal(frameRenderingSemaphore);
         });
     }
