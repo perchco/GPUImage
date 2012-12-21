@@ -108,7 +108,7 @@
 	
 	// Add the video frame output	
 	videoOutput = [[AVCaptureVideoDataOutput alloc] init];
-	[videoOutput setAlwaysDiscardsLateVideoFrames:[[NSProcessInfo processInfo] processorCount] == 1 ? YES : NO];
+	[videoOutput setAlwaysDiscardsLateVideoFrames:NO];
 
 	[videoOutput setVideoSettings:[NSDictionary dictionaryWithObject:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA] forKey:(id)kCVPixelBufferPixelFormatTypeKey]];
     
