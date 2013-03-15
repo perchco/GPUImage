@@ -63,6 +63,8 @@
 - (void)setupFilter;
 {
     videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionBack];
+//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1280x720 cameraPosition:AVCaptureDevicePositionBack];
+//    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset1920x1080 cameraPosition:AVCaptureDevicePositionBack];
 //    videoCamera = [[GPUImageVideoCamera alloc] initWithSessionPreset:AVCaptureSessionPreset640x480 cameraPosition:AVCaptureDevicePositionFront];
     videoCamera.outputImageOrientation = UIInterfaceOrientationPortrait;
     facesSwitch.hidden = YES;
@@ -103,6 +105,17 @@
             [self.filterSettingsSlider setMaximumValue:0.1];
             
             filter = [[GPUImagePolarPixellateFilter alloc] init];
+        }; break;
+        case GPUIMAGE_PIXELLATE_POSITION:
+        {
+            self.title = @"Pixellate (position)";
+            self.filterSettingsSlider.hidden = NO;
+            
+            [self.filterSettingsSlider setValue:0.25];
+            [self.filterSettingsSlider setMinimumValue:0.0];
+            [self.filterSettingsSlider setMaximumValue:0.5];
+            
+            filter = [[GPUImagePixellatePositionFilter alloc] init];
         }; break;
         case GPUIMAGE_POLKADOT:
         {
@@ -819,22 +832,22 @@
             
             filter = [[GPUImagePerlinNoiseFilter alloc] init];
         }; break;
-        case GPUIMAGE_VORONI: 
+        case GPUIMAGE_VORONOI:
         {
-            self.title = @"Voroni";
+            self.title = @"Voronoi";
             self.filterSettingsSlider.hidden = YES;
             
-            GPUImageJFAVoroniFilter *jfa = [[GPUImageJFAVoroniFilter alloc] init];
+            GPUImageJFAVoronoiFilter *jfa = [[GPUImageJFAVoronoiFilter alloc] init];
             [jfa setSizeInPixels:CGSizeMake(1024.0, 1024.0)];
             
             sourcePicture = [[GPUImagePicture alloc] initWithImage:[UIImage imageNamed:@"voroni_points2.png"]];
 
             [sourcePicture addTarget:jfa];
             
-            filter = [[GPUImageVoroniConsumerFilter alloc] init];
+            filter = [[GPUImageVoronoiConsumerFilter alloc] init];
             
             [jfa setSizeInPixels:CGSizeMake(1024.0, 1024.0)];
-            [(GPUImageVoroniConsumerFilter *)filter setSizeInPixels:CGSizeMake(1024.0, 1024.0)];
+            [(GPUImageVoronoiConsumerFilter *)filter setSizeInPixels:CGSizeMake(1024.0, 1024.0)];
             
             [videoCamera addTarget:filter];
             [jfa addTarget:filter];
@@ -968,6 +981,14 @@
             
             filter = [[GPUImageColorDodgeBlendFilter alloc] init];
         }; break;
+        case GPUIMAGE_LINEARBURN:
+        {
+            self.title = @"Linear Burn Blend";
+            self.filterSettingsSlider.hidden = YES;
+            needsSecondImage = YES;
+            
+            filter = [[GPUImageLinearBurnBlendFilter alloc] init];
+        }; break;
         case GPUIMAGE_EXCLUSIONBLEND:
         {
             self.title = @"Exclusion Blend";
@@ -1008,6 +1029,38 @@
             
             filter = [[GPUImageSoftLightBlendFilter alloc] init];
         }; break;
+        case GPUIMAGE_COLORBLEND:
+        {
+            self.title = @"Color Blend";
+            self.filterSettingsSlider.hidden = YES;
+            needsSecondImage = YES;
+            
+            filter = [[GPUImageColorBlendFilter alloc] init];
+        }; break;
+        case GPUIMAGE_HUEBLEND:
+        {
+            self.title = @"Hue Blend";
+            self.filterSettingsSlider.hidden = YES;
+            needsSecondImage = YES;
+            
+            filter = [[GPUImageHueBlendFilter alloc] init];
+        }; break;
+        case GPUIMAGE_SATURATIONBLEND:
+        {
+            self.title = @"Saturation Blend";
+            self.filterSettingsSlider.hidden = YES;
+            needsSecondImage = YES;
+            
+            filter = [[GPUImageSaturationBlendFilter alloc] init];
+        }; break;
+        case GPUIMAGE_LUMINOSITYBLEND:
+        {
+            self.title = @"Luminosity Blend";
+            self.filterSettingsSlider.hidden = YES;
+            needsSecondImage = YES;
+            
+            filter = [[GPUImageLuminosityBlendFilter alloc] init];
+        }; break;
         case GPUIMAGE_NORMALBLEND:
         {
             self.title = @"Normal Blend";
@@ -1015,6 +1068,18 @@
             needsSecondImage = YES;
             
             filter = [[GPUImageNormalBlendFilter alloc] init];
+        }; break;
+        case GPUIMAGE_POISSONBLEND:
+        {
+            self.title = @"Poisson Blend";
+            self.filterSettingsSlider.hidden = NO;
+            needsSecondImage = YES;
+
+            [self.filterSettingsSlider setMinimumValue:0.0];
+            [self.filterSettingsSlider setMaximumValue:1.0];
+            [self.filterSettingsSlider setValue:0.5];
+
+            filter = [[GPUImagePoissonBlendFilter alloc] init];
         }; break;
 
         case GPUIMAGE_OPACITY:
@@ -1047,7 +1112,13 @@
             
             filter = [[GPUImageKuwaharaFilter alloc] init];
         }; break;
+        case GPUIMAGE_KUWAHARARADIUS3:
+        {
+            self.title = @"Kuwahara (Radius 3)";
+            self.filterSettingsSlider.hidden = YES;
             
+            filter = [[GPUImageKuwaharaRadius3Filter alloc] init];
+        }; break;
         case GPUIMAGE_VIGNETTE:
         {
              self.title = @"Vignette";
@@ -1094,6 +1165,28 @@
             
             filter = [[GPUImageMedianFilter alloc] init];
 		}; break;
+        case GPUIMAGE_MOTIONBLUR:
+        {
+            self.title = @"Motion Blur";
+            self.filterSettingsSlider.hidden = NO;
+            
+            [self.filterSettingsSlider setMinimumValue:0.0];
+            [self.filterSettingsSlider setMaximumValue:180.0f];
+            [self.filterSettingsSlider setValue:0.0];
+            
+            filter = [[GPUImageMotionBlurFilter alloc] init];
+        }; break;
+        case GPUIMAGE_ZOOMBLUR:
+        {
+            self.title = @"Zoom Blur";
+            self.filterSettingsSlider.hidden = NO;
+            
+            [self.filterSettingsSlider setMinimumValue:0.0];
+            [self.filterSettingsSlider setMaximumValue:2.5f];
+            [self.filterSettingsSlider setValue:1.0];
+            
+            filter = [[GPUImageZoomBlurFilter alloc] init];
+        }; break;
         case GPUIMAGE_UIELEMENT:
         {
             self.title = @"UI Element";
@@ -1112,6 +1205,18 @@
             
             filter = [[GPUImageGaussianSelectiveBlurFilter alloc] init];
             [(GPUImageGaussianSelectiveBlurFilter*)filter setExcludeCircleRadius:40.0/320.0];
+        }; break;
+        case GPUIMAGE_GAUSSIAN_POSITION:
+        {
+            self.title = @"Selective Blur";
+            self.filterSettingsSlider.hidden = NO;
+            
+            [self.filterSettingsSlider setMinimumValue:0.0];
+            [self.filterSettingsSlider setMaximumValue:.75f];
+            [self.filterSettingsSlider setValue:40.0/320.0];
+            
+            filter = [[GPUImageGaussianBlurPositionFilter alloc] init];
+            [(GPUImageGaussianBlurPositionFilter*)filter setBlurRadius:40.0/320.0];
         }; break;
         case GPUIMAGE_BILATERAL:
         {
@@ -1178,7 +1283,7 @@
     else 
     {
     
-        if (filterType != GPUIMAGE_VORONI) 
+        if (filterType != GPUIMAGE_VORONOI)
         {
             [videoCamera addTarget:filter];
         }
@@ -1195,7 +1300,7 @@
 				inputImage = [UIImage imageNamed:@"mask"];
 			}
             /*
-			else if (filterType == GPUIMAGE_VORONI) {
+			else if (filterType == GPUIMAGE_VORONOI) {
                 inputImage = [UIImage imageNamed:@"voroni_points.png"];
             }*/
             else {
@@ -1415,6 +1520,7 @@
         case GPUIMAGE_SEPIA: [(GPUImageSepiaFilter *)filter setIntensity:[(UISlider *)sender value]]; break;
         case GPUIMAGE_PIXELLATE: [(GPUImagePixellateFilter *)filter setFractionalWidthOfAPixel:[(UISlider *)sender value]]; break;
         case GPUIMAGE_POLARPIXELLATE: [(GPUImagePolarPixellateFilter *)filter setPixelSize:CGSizeMake([(UISlider *)sender value], [(UISlider *)sender value])]; break;
+        case GPUIMAGE_PIXELLATE_POSITION: [(GPUImagePixellatePositionFilter *)filter setRadius:[(UISlider *)sender value]]; break;
         case GPUIMAGE_POLKADOT: [(GPUImagePolkaDotFilter *)filter setFractionalWidthOfAPixel:[(UISlider *)sender value]]; break;
         case GPUIMAGE_HALFTONE: [(GPUImageHalftoneFilter *)filter setFractionalWidthOfAPixel:[(UISlider *)sender value]]; break;
         case GPUIMAGE_SATURATION: [(GPUImageSaturationFilter *)filter setSaturation:[(UISlider *)sender value]]; break;
@@ -1443,6 +1549,7 @@
         case GPUIMAGE_ADAPTIVETHRESHOLD: [(GPUImageAdaptiveThresholdFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
         case GPUIMAGE_AVERAGELUMINANCETHRESHOLD: [(GPUImageAverageLuminanceThresholdFilter *)filter setThresholdMultiplier:[(UISlider *)sender value]]; break;
         case GPUIMAGE_DISSOLVE: [(GPUImageDissolveBlendFilter *)filter setMix:[(UISlider *)sender value]]; break;
+        case GPUIMAGE_POISSONBLEND: [(GPUImagePoissonBlendFilter *)filter setMix:[(UISlider *)sender value]]; break;
         case GPUIMAGE_LOWPASS: [(GPUImageLowPassFilter *)filter setFilterStrength:[(UISlider *)sender value]]; break;
         case GPUIMAGE_HIGHPASS: [(GPUImageHighPassFilter *)filter setFilterStrength:[(UISlider *)sender value]]; break;
         case GPUIMAGE_MOTIONDETECTOR: [(GPUImageMotionDetector *)filter setLowPassFilterStrength:[(UISlider *)sender value]]; break;
@@ -1472,11 +1579,15 @@
         case GPUIMAGE_MOSAIC:  [(GPUImageMosaicFilter *)filter setDisplayTileSize:CGSizeMake([(UISlider *)sender value], [(UISlider *)sender value])]; break;
         case GPUIMAGE_VIGNETTE: [(GPUImageVignetteFilter *)filter setVignetteEnd:[(UISlider *)sender value]]; break;
         case GPUIMAGE_GAUSSIAN: [(GPUImageGaussianBlurFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
-        case GPUIMAGE_BILATERAL: [(GPUImageBilateralFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
+//        case GPUIMAGE_BILATERAL: [(GPUImageBilateralFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
+        case GPUIMAGE_BILATERAL: [(GPUImageBilateralFilter *)filter setDistanceNormalizationFactor:[(UISlider*)sender value]]; break;
         case GPUIMAGE_FASTBLUR: [(GPUImageFastBlurFilter *)filter setBlurPasses:round([(UISlider*)sender value])]; break;
 //        case GPUIMAGE_FASTBLUR: [(GPUImageFastBlurFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
+        case GPUIMAGE_MOTIONBLUR: [(GPUImageMotionBlurFilter *)filter setBlurAngle:[(UISlider*)sender value]]; break;
+        case GPUIMAGE_ZOOMBLUR: [(GPUImageZoomBlurFilter *)filter setBlurSize:[(UISlider*)sender value]]; break;
         case GPUIMAGE_OPACITY:  [(GPUImageOpacityFilter *)filter setOpacity:[(UISlider *)sender value]]; break;
         case GPUIMAGE_GAUSSIAN_SELECTIVE: [(GPUImageGaussianSelectiveBlurFilter *)filter setExcludeCircleRadius:[(UISlider*)sender value]]; break;
+        case GPUIMAGE_GAUSSIAN_POSITION: [(GPUImageGaussianBlurPositionFilter *)filter setBlurRadius:[(UISlider *)sender value]]; break;
         case GPUIMAGE_FILTERGROUP: [(GPUImagePixellateFilter *)[(GPUImageFilterGroup *)filter filterAtIndex:1] setFractionalWidthOfAPixel:[(UISlider *)sender value]]; break;
         case GPUIMAGE_CROP: [(GPUImageCropFilter *)filter setCropRegion:CGRectMake(0.0, 0.0, 1.0, [(UISlider*)sender value])]; break;
         case GPUIMAGE_TRANSFORM: [(GPUImageTransformFilter *)filter setAffineTransform:CGAffineTransformMakeRotation([(UISlider*)sender value])]; break;

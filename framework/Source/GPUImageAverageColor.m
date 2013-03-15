@@ -56,11 +56,6 @@ NSString *const kGPUImageColorAveragingFragmentShaderString = SHADER_STRING
 #pragma mark -
 #pragma mark Initialization and teardown
 
-- (void)dealloc {
-  free(rawImagePixels);
-}
-
-
 - (id)init;
 {
     if (!(self = [super initWithVertexShaderFromString:kGPUImageColorAveragingVertexShaderString fragmentShaderFromString:kGPUImageColorAveragingFragmentShaderString]))
@@ -81,6 +76,14 @@ NSString *const kGPUImageColorAveragingFragmentShaderString = SHADER_STRING
     }];
 
     return self;
+}
+
+- (void)dealloc;
+{
+    if (rawImagePixels != NULL)
+    {
+        free(rawImagePixels);
+    }
 }
 
 #pragma mark -
