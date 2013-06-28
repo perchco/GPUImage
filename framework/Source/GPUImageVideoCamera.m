@@ -132,7 +132,8 @@ NSString *const kGPUImageYUVVideoRangeConversionForLAFragmentShaderString = SHAD
     outputRotation = kGPUImageNoRotation;
 
     // TODO: a temp solution until I can fix the [RecordingBuffer deepCopySampleBuffer] method.
-    captureAsYUV = [[NSProcessInfo processInfo] processorCount] == 1;
+//    captureAsYUV = [[NSProcessInfo processInfo] processorCount] == 1;
+  captureAsYUV = NO;
 
     runSynchronouslyOnVideoProcessingQueue(^{
         
